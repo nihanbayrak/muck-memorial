@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Runtime data (created at runtime, persisted on cloud disk)
+data/
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Cloned template (not needed in production)
+Endless-Gallery-Template/

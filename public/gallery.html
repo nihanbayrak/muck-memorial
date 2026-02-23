@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Endless Gallery — Muck Memorial</title>
+  <meta name="description" content="An endless gallery of memories for Muck — forever in our hearts">
+
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap"
+    rel="stylesheet">
+
+  <!-- Gallery Styles -->
+  <link rel="stylesheet" href="css/gallery.css">
+  <link rel="stylesheet" href="css/theme.css">
+
+  <style>
+    /* Override gallery theme to match Muck memorial aesthetic */
+    :root {
+      --gallery-bg: #0D0D0D;
+      --gallery-text-color: rgba(232, 196, 160, 0.6);
+      --gallery-focus-color: rgba(232, 196, 160, 0.3);
+      --gallery-loading-bg: #2a2a2a;
+      --gallery-border-radius: 6px;
+      --gallery-item-opacity: 0.85;
+      --gallery-item-opacity-hover: 1.0;
+      --gallery-transition-duration: 400ms;
+    }
+
+    /* Loading screen — memorial themed */
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0D0D0D;
+      z-index: 9999;
+      transition: opacity 0.6s ease;
+    }
+
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    .loading-paw {
+      font-size: 48px;
+      animation: pawPulse 1.5s ease-in-out infinite;
+      margin-bottom: 24px;
+    }
+
+    @keyframes pawPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.6;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 1;
+      }
+    }
+
+    .loading-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(232, 196, 160, 0.5);
+    }
+
+    /* Navigation header */
+    .gallery-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      background: linear-gradient(to bottom, rgba(13, 13, 13, 0.95) 0%, rgba(13, 13, 13, 0.6) 70%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .gallery-nav>* {
+      pointer-events: auto;
+    }
+
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: rgba(232, 196, 160, 0.7);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      padding: 10px 20px;
+      border: 1px solid rgba(232, 196, 160, 0.15);
+      border-radius: 4px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-back:hover {
+      color: #E8C4A0;
+      border-color: rgba(232, 196, 160, 0.4);
+      background: rgba(232, 196, 160, 0.08);
+      transform: translateX(-4px);
+    }
+
+    .nav-back .arrow {
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-back:hover .arrow {
+      transform: translateX(-4px);
+    }
+
+    .nav-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      color: rgba(232, 196, 160, 0.5);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .nav-count {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 1px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 20px;
+      padding: 40px;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      opacity: 0.4;
+    }
+
+    .empty-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      color: rgba(232, 196, 160, 0.6);
+    }
+
+    .empty-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.3);
+      max-width: 400px;
+      line-height: 1.7;
+    }
+
+    .empty-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 14px 32px;
+      background: transparent;
+      border: 1px solid rgba(232, 196, 160, 0.3);
+      color: #E8C4A0;
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: all 0.4s ease;
+    }
+
+    .empty-link:hover {
+      background: rgba(232, 196, 160, 0.1);
+      border-color: rgba(232, 196, 160, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* Custom instructions */
+    .gallery-instructions {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Responsive nav */
+    @media (max-width: 768px) {
+      .gallery-nav {
+        padding: 16px 20px;
+      }
+
+      .nav-back {
+        font-size: 11px;
+        padding: 8px 14px;
+        letter-spacing: 1px;
+      }
+
+      .nav-title {
+        display: none;
+      }
+
+      .nav-count {
+        font-size: 10px;
+      }
+    }
+
+    /* Ambient glow effect behind gallery */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60vw;
+      height: 60vh;
+      background: radial-gradient(ellipse, rgba(232, 196, 160, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <div class="loading-paw">🐾</div>
+      <div class="loading-text">Loading Memories...</div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="gallery-nav">
+    <a href="/" class="nav-back">
+      <span class="arrow">←</span>
+      <span>Memorial</span>
+    </a>
+    <div class="nav-title">Endless Gallery</div>
+    <div class="nav-count" id="photo-count"></div>
+  </nav>
+
+  <!-- Gallery Container -->
+  <div id="gallery-container"></div>
+
+  <!-- Instructions Overlay -->
+  <div class="gallery-instructions">
+    <span class="desktop-only">Scroll to explore memories</span>
+    <span class="mobile-only">Swipe to explore</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/gallery.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('gallery-container');
+      const loadingScreen = document.getElementById('loading-screen');
+      const photoCount = document.getElementById('photo-count');
+
+      try {
+        // Fetch uploaded photos from the API
+        const response = await fetch('/api/gallery');
+        const mediaItems = await response.json();
+
+        // Update photo count
+        photoCount.textContent = `${mediaItems.length} photo${mediaItems.length !== 1 ? 's' : ''}`;
+
+        // Handle empty state
+        if (!mediaItems || mediaItems.length === 0) {
+          loadingScreen.classList.add('hidden');
+          setTimeout(() => loadingScreen.remove(), 600);
+
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">📷</div>
+              <div class="empty-title">No Photos Yet</div>
+              <div class="empty-subtitle">
+                Upload some memories on the memorial page and they'll appear here in an endless gallery.
+              </div>
+              <a href="/" class="empty-link">
+                <span>← Add Memories</span>
+              </a>
+            </div>
+          `;
+          return;
+        }
+
+        // Initialize the gallery
+        const gallery = new EndlessGallery(container, mediaItems, GALLERY_CONFIG);
+
+        // Hide loading screen
+        setTimeout(() => {
+          loadingScreen.classList.add('hidden');
+          setTimeout(() => loadingScreen.remove(), 600);
+        }, 600);
+
+        // Make gallery accessible for debugging
+        window.gallery = gallery;
+
+        console.log('🐾 Muck Gallery initialized!');
+        console.log(`📸 ${mediaItems.length} photos loaded`);
+
+      } catch (error) {
+        console.error('Failed to load gallery:', error);
+        loadingScreen.innerHTML = `
+          <div class="loading-content">
+            <div class="loading-paw">😿</div>
+            <div class="loading-text">Failed to load gallery</div>
+            <div style="margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.3);">${error.message}</div>
+          </div>
+        `;
+      }
+    });
+
+    // Responsive text for mobile/desktop
+    function updateInstructions() {
+      const isMobile = window.innerWidth < 768;
+      document.querySelectorAll('.desktop-only').forEach(el => {
+        el.style.display = isMobile ? 'none' : 'inline';
+      });
+      document.querySelectorAll('.mobile-only').forEach(el => {
+        el.style.display = isMobile ? 'inline' : 'none';
+      });
+    }
+
+    updateInstructions();
+    window.addEventListener('resize', updateInstructions);
+  </script>
+</body>
+
+</html>

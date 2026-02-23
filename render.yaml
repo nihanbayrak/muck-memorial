@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: muck-memorial
+    runtime: docker
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: muck-data
+      mountPath: /data
+      sizeGB: 1

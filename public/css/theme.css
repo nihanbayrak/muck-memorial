@@ -1,0 +1,119 @@
+/**
+ * Endless Gallery - Theme Variables
+ * 
+ * Customize these CSS variables to match your design.
+ * Changes here will update the gallery appearance without touching core CSS.
+ */
+
+:root {
+  /* ========================================
+     COLORS
+     ======================================== */
+  
+  /* Background */
+  --gallery-bg: #000000;
+  
+  /* Text color for overlays */
+  --gallery-text-color: rgba(255, 255, 255, 0.5);
+  
+  /* Focus outline color */
+  --gallery-focus-color: rgba(255, 255, 255, 0.3);
+  
+  /* Loading background for images */
+  --gallery-loading-bg: #1a1a1a;
+  
+  /* ========================================
+     SPACING
+     ======================================== */
+  
+  /* Gap between gallery items (should match config.js) */
+  --gallery-gap: 18px;
+  
+  /* Border radius for media items */
+  --gallery-border-radius: 4px;
+  
+  /* ========================================
+     OPACITY & EFFECTS
+     ======================================== */
+  
+  /* Default opacity for gallery items */
+  --gallery-item-opacity: 0.9;
+  
+  /* Hover opacity for gallery items */
+  --gallery-item-opacity-hover: 1.0;
+  
+  /* Transition duration for hover effects */
+  --gallery-transition-duration: 300ms;
+  
+  /* ========================================
+     TYPOGRAPHY
+     ======================================== */
+  
+  /* Font family for overlays */
+  --gallery-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  
+  /* Font size for instructions */
+  --gallery-instructions-size: 10px;
+  
+  /* Letter spacing for instructions */
+  --gallery-instructions-spacing: 0.2em;
+}
+
+/* ========================================
+   THEME VARIATIONS
+   ======================================== */
+
+/* Light theme example */
+.gallery-theme-light {
+  --gallery-bg: #ffffff;
+  --gallery-text-color: rgba(0, 0, 0, 0.6);
+  --gallery-focus-color: rgba(0, 0, 0, 0.3);
+  --gallery-loading-bg: #f5f5f5;
+}
+
+/* Colorful theme example */
+.gallery-theme-colorful {
+  --gallery-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gallery-border-radius: 8px;
+  --gallery-item-opacity: 0.85;
+  --gallery-item-opacity-hover: 1.0;
+}
+
+/* Minimal theme example */
+.gallery-theme-minimal {
+  --gallery-bg: #0a0a0a;
+  --gallery-border-radius: 0;
+  --gallery-item-opacity: 1.0;
+  --gallery-item-opacity-hover: 1.0;
+  --gallery-transition-duration: 0ms;
+}
+
+/* High contrast theme for accessibility */
+.gallery-theme-high-contrast {
+  --gallery-bg: #000000;
+  --gallery-text-color: #ffffff;
+  --gallery-focus-color: #ffff00;
+  --gallery-item-opacity: 1.0;
+  --gallery-item-opacity-hover: 1.0;
+}
+
+/* ========================================
+   CUSTOM THEME USAGE
+   ======================================== */
+
+/*
+  To use a theme, add the class to the body element:
+  
+  <body class="gallery-theme-light">
+  
+  Or create your own custom theme:
+  
+  .my-custom-theme {
+    --gallery-bg: #your-color;
+    --gallery-item-opacity: 0.95;
+    // ... other variables
+  }
+  
+  <body class="my-custom-theme">
+*/
+

@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muck — Forever in Our Hearts</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0D0D0D;
+      --bg-secondary: #161616;
+      --bg-card: #1A1A1A;
+      --text-primary: #FAFAFA;
+      --text-secondary: #888888;
+      --text-muted: #555555;
+      --accent: #E8C4A0;
+      --accent-warm: #D4A574;
+      --accent-glow: rgba(232, 196, 160, 0.15);
+      --border: rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' style='font-size:20px'><text y='20'>🐾</text></svg>") 16 16, auto;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent-warm);
+      border-radius: 4px;
+    }
+
+    /* Subtle floating particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      opacity: 0;
+      animation: floatUp 15s ease-in-out infinite;
+      color: var(--accent-warm);
+      font-family: serif;
+    }
+
+    .particle:nth-child(odd) {
+      animation-name: floatUpSway;
+      animation-duration: 18s;
+    }
+
+    .particle:nth-child(3n) {
+      color: var(--text-muted);
+    }
+
+    @keyframes floatUpSway {
+      0% {
+        opacity: 0;
+        transform: translateY(100vh) translateX(0) rotate(0deg) scale(0.5);
+      }
+
+      10% {
+        opacity: 0.3;
+        transform: translateY(90vh) translateX(20px) rotate(20deg) scale(0.8);
+      }
+
+      30% {
+        transform: translateY(60vh) translateX(-15px) rotate(60deg) scale(0.9);
+      }
+
+      50% {
+        opacity: 0.35;
+        transform: translateY(40vh) translateX(25px) rotate(100deg) scale(0.85);
+      }
+
+      70% {
+        transform: translateY(20vh) translateX(-10px) rotate(140deg) scale(0.7);
+      }
+
+      90% {
+        opacity: 0.15;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-50px) translateX(15px) rotate(180deg) scale(0.5);
+      }
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 0;
+        transform: translateY(100vh) scale(0.6);
+      }
+
+      15% {
+        opacity: 0.25;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+
+      85% {
+        opacity: 0.15;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.8);
+      }
+    }
+
+    /* Paw trail effect */
+    .paw-trail {
+      position: fixed;
+      font-size: 16px;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.6;
+      animation: pawFade 1.5s ease-out forwards;
+    }
+
+    @keyframes pawFade {
+      0% {
+        opacity: 0.6;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, var(--accent-warm));
+      opacity: 0.5;
+    }
+
+    .photo-frame {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+      margin-bottom: 40px;
+      position: relative;
+      animation: softGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes softGlow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 40px var(--accent-glow);
+      }
+
+      50% {
+        box-shadow: 0 0 60px var(--accent-glow), 0 0 80px rgba(232, 196, 160, 0.1);
+      }
+    }
+
+    .photo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .photo-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-placeholder {
+      text-align: center;
+    }
+
+    .photo-placeholder-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .photo-placeholder-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(48px, 12vw, 96px);
+      font-weight: 400;
+      letter-spacing: 12px;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .dates {
+      font-size: 14px;
+      letter-spacing: 6px;
+      color: var(--accent-warm);
+      margin-bottom: 24px;
+    }
+
+    .epitaph {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 400px;
+      margin-bottom: 40px;
+    }
+
+    .rainbow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: linear-gradient(90deg,
+          rgba(255, 107, 107, 0.15),
+          rgba(254, 202, 87, 0.15),
+          rgba(72, 219, 251, 0.15),
+          rgba(255, 159, 243, 0.15));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 40px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+    }
+
+    .rainbow-badge span {
+      font-size: 16px;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(8px);
+      }
+    }
+
+    /* Section Styles */
+    .section {
+      padding: 100px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 6vw, 48px);
+      font-weight: 400;
+      margin-bottom: 48px;
+    }
+
+    /* Candle Section */
+    .candle-section {
+      text-align: center;
+      padding: 80px 20px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .candles-display {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-height: 60px;
+      margin: 40px 0;
+    }
+
+    .candle-icon {
+      font-size: 28px;
+      animation: flicker 1.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 12px rgba(255, 180, 100, 0.8));
+    }
+
+    @keyframes flicker {
+
+      0%,
+      100% {
+        transform: scaleY(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scaleY(1.05);
+        opacity: 0.9;
+      }
+    }
+
+    .candle-btn {
+      background: transparent;
+      border: 1px solid var(--accent-warm);
+      color: var(--accent-warm);
+      padding: 16px 48px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .candle-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--accent-warm);
+      transition: left 0.4s ease;
+      z-index: -1;
+    }
+
+    .candle-btn:hover {
+      color: var(--bg-primary);
+    }
+
+    .candle-btn:hover::before {
+      left: 0;
+    }
+
+    .candle-count {
+      margin-top: 24px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .candle-count strong {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Memories Grid */
+    .memories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .memory-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+
+    .memory-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(232, 196, 160, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .memory-photo {
+      height: 200px;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .memory-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .memory-card:hover .memory-photo img {
+      transform: scale(1.05);
+    }
+
+    .memory-photo-placeholder {
+      color: var(--text-muted);
+      font-size: 32px;
+    }
+
+    .memory-content {
+      padding: 20px;
+    }
+
+    .memory-date {
+      font-size: 11px;
+      color: var(--accent-warm);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .memory-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .memory-note {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    /* Add Memory Card */
+    .add-memory-card {
+      border: 1px dashed var(--border);
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 320px;
+      transition: all 0.4s ease;
+    }
+
+    .add-memory-card:hover {
+      border-color: var(--accent-warm);
+      background: var(--accent-glow);
+    }
+
+    .add-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .add-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+    }
+
+    /* Messages Section */
+    .messages-section {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+    }
+
+    .message-form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .message-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .message-input:focus {
+      outline: none;
+      border-color: var(--accent-warm);
+    }
+
+    .message-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .message-submit {
+      padding: 16px 32px;
+      background: var(--accent-warm);
+      border: none;
+      color: var(--bg-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .message-submit:hover {
+      background: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .messages-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message-card {
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .message-author {
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .message-time {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .message-text {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* Legacy Stats */
+    .legacy-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .legacy-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .legacy-item {
+      padding: 32px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .legacy-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .legacy-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 80px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-paws {
+      font-size: 20px;
+      letter-spacing: 24px;
+      opacity: 0.3;
+      margin-bottom: 24px;
+    }
+
+    .footer-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .footer-quote {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--text-muted);
+      max-width: 400px;
+      margin: 0 auto 24px;
+      line-height: 1.8;
+    }
+
+    .footer-love {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Upload Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      position: relative;
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 24px;
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent-warm);
+      background: var(--accent-glow);
+    }
+
+    .upload-area.dragover {
+      border-color: var(--accent-warm);
+      background: var(--accent-glow);
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .upload-text {
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-warm);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .modal-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent-warm);
+      border: none;
+      color: var(--bg-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 8px;
+    }
+
+    .modal-submit:hover {
+      background: var(--accent);
+    }
+
+    /* Preview image in upload */
+    .upload-preview {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    /* Glow effect */
+    .glow-effect {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, rgba(232, 196, 160, 0.15) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .glow-effect.active {
+      opacity: 1;
+    }
+
+    /* Gallery Link */
+    .gallery-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 36px;
+      background: transparent;
+      border: 1px solid rgba(232, 196, 160, 0.25);
+      border-radius: 4px;
+      color: var(--accent-warm);
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .gallery-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(232, 196, 160, 0.08), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .gallery-link:hover {
+      border-color: rgba(232, 196, 160, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(232, 196, 160, 0.1);
+    }
+
+    .gallery-link:hover::before {
+      left: 100%;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .name {
+        letter-spacing: 6px;
+      }
+
+      .dates {
+        letter-spacing: 3px;
+      }
+
+      .section {
+        padding: 60px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Glow effect -->
+  <div class="glow-effect" id="glow"></div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="photo-frame">
+      <div class="photo-inner" id="mainPhoto">
+        <img src="muck-photo.png" alt="Muck">
+      </div>
+    </div>
+
+    <h1 class="name">Muck</h1>
+    <p class="dates">2018 — 2024</p>
+    <p class="epitaph">"The heart of our office, everyone's best friend"</p>
+
+    <a href="/gallery.html" class="gallery-link">
+      <span>✦</span>
+      <span>Endless Gallery</span>
+    </a>
+
+
+    <div class="scroll-hint">
+      <span>Scroll to remember</span>
+      <span>↓</span>
+    </div>
+  </section>
+
+  <!-- Candle Section -->
+  <section class="candle-section">
+    <p class="section-label">Light a candle</p>
+    <h2 class="section-title">Forever in Our Hearts</h2>
+
+    <div class="candles-display" id="candlesDisplay"></div>
+
+    <button class="candle-btn" id="candleBtn" onclick="lightCandle()">
+      🕯️ &nbsp; Light a Candle
+    </button>
+
+    <div class="candle-count">
+      <strong id="candleCount">0</strong>
+      candles lit with love
+    </div>
+  </section>
+
+  <!-- Memories Section -->
+  <section class="section">
+    <p class="section-label">Memories</p>
+    <h2 class="section-title">Moments We Cherish</h2>
+
+    <div class="memories-grid" id="memoriesGrid">
+      <!-- Memory cards will be inserted here -->
+
+      <div class="memory-card add-memory-card" onclick="openUploadModal()">
+        <div class="add-icon">🐾</div>
+        <div class="add-text">Add a Memory</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Messages Section -->
+  <section class="section messages-section">
+    <p class="section-label">Messages</p>
+    <h2 class="section-title">Words for Muck</h2>
+
+    <div class="message-form">
+      <input type="text" class="message-input" id="messageInput" placeholder="Leave a message for Muck...">
+      <button class="message-submit" onclick="submitMessage()">Send</button>
+    </div>
+
+    <div class="messages-list" id="messagesList"></div>
+  </section>
+
+  <!-- Legacy Section -->
+  <section class="section">
+    <p class="section-label">Legacy</p>
+    <h2 class="section-title">Muck's Impact</h2>
+
+    <div class="legacy-grid">
+      <div class="legacy-item">
+        <div class="legacy-number">847</div>
+        <div class="legacy-label">Days With Us</div>
+      </div>
+      <div class="legacy-item">
+        <div class="legacy-number">∞</div>
+        <div class="legacy-label">Smiles Given</div>
+      </div>
+      <div class="legacy-item">
+        <div class="legacy-number">42</div>
+        <div class="legacy-label">Friends Made</div>
+      </div>
+      <div class="legacy-item">
+        <div class="legacy-number">♾️</div>
+        <div class="legacy-label">Love Shared</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-paws">🐾 🐾 🐾</div>
+    <div class="footer-name">Muck • 2018–2024</div>
+    <p class="footer-quote">
+      "A dog is not just part of your life,<br>
+      but to them, you are their whole life."
+    </p>
+    <div class="footer-love">Forever in our hearts 💛</div>
+  </footer>
+
+  <!-- Upload Modal -->
+  <div class="modal-overlay" id="uploadModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeUploadModal()">×</button>
+      <h3 class="modal-title">Share a Memory</h3>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">Drop an image or click to upload</div>
+        <div class="upload-hint">JPG, PNG up to 5MB</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <img id="uploadPreview" class="upload-preview" style="display: none;">
+
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="memoryTitle" placeholder="e.g., Lunch break naps">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Your memory</label>
+        <textarea class="form-input form-textarea" id="memoryNote" placeholder="Share a story or memory..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Your name</label>
+        <input type="text" class="form-input" id="memoryAuthor" placeholder="Your name">
+      </div>
+
+      <button class="modal-submit" onclick="submitMemory()">Share Memory</button>
+    </div>
+  </div>
+
+  <script>
+    // Load initial data from API
+    async function loadData() {
+      try {
+        const [candlesRes, memoriesRes, messagesRes] = await Promise.all([
+          fetch('/api/candles'),
+          fetch('/api/memories'),
+          fetch('/api/messages')
+        ]);
+        if (candlesRes.ok) {
+          const { count } = await candlesRes.json();
+          updateCandleDisplay(count);
+        }
+        if (memoriesRes.ok) {
+          const memories = await memoriesRes.json();
+          renderMemories(memories);
+        }
+        if (messagesRes.ok) {
+          const messages = await messagesRes.json();
+          renderMessages(messages);
+        }
+      } catch (e) {
+        console.log('Could not load data:', e);
+      }
+    }
+    loadData();
+
+    // Create floating particles - minimal botanical elements
+    function createParticles() {
+      const container = document.getElementById('particles');
+      const botanicals = ['✿', '❀', '✾', '❁', '⚘', '✽', '∙', '◦', '○', '·'];
+      for (let i = 0; i < 25; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = botanicals[Math.floor(Math.random() * botanicals.length)];
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDelay = Math.random() * 10 + 's';
+        p.style.fontSize = (8 + Math.random() * 16) + 'px';
+        p.style.opacity = 0.15 + Math.random() * 0.2;
+        container.appendChild(p);
+      }
+    }
+    createParticles();
+
+    // Paw trail effect
+    let lastPawTime = 0;
+    document.addEventListener('click', (e) => {
+      if (Date.now() - lastPawTime < 200) return;
+      lastPawTime = Date.now();
+
+      const paw = document.createElement('div');
+      paw.className = 'paw-trail';
+      paw.textContent = '🐾';
+      paw.style.left = (e.clientX - 8) + 'px';
+      paw.style.top = (e.clientY - 8) + 'px';
+      paw.style.transform = `rotate(${Math.random() * 40 - 20}deg)`;
+      document.body.appendChild(paw);
+      setTimeout(() => paw.remove(), 1500);
+    });
+
+    // Candle functions
+    async function lightCandle() {
+      const glow = document.getElementById('glow');
+      glow.classList.add('active');
+      setTimeout(() => glow.classList.remove('active'), 2000);
+
+      try {
+        const res = await fetch('/api/candles', { method: 'POST' });
+        if (res.ok) {
+          const { count } = await res.json();
+          updateCandleDisplay(count);
+        } else {
+          const current = parseInt(document.getElementById('candleCount').textContent);
+          updateCandleDisplay(current + 1);
+        }
+      } catch (e) {
+        const current = parseInt(document.getElementById('candleCount').textContent);
+        updateCandleDisplay(current + 1);
+      }
+    }
+
+    function updateCandleDisplay(count) {
+      document.getElementById('candleCount').textContent = count;
+      const display = document.getElementById('candlesDisplay');
+      display.innerHTML = '';
+
+      const show = Math.min(count, 12);
+      for (let i = 0; i < show; i++) {
+        const c = document.createElement('span');
+        c.className = 'candle-icon';
+        c.textContent = '🕯️';
+        c.style.animationDelay = (i * 0.1) + 's';
+        display.appendChild(c);
+      }
+      if (count > 12) {
+        const more = document.createElement('span');
+        more.style.cssText = 'margin-left:8px;color:#D4A574;font-size:14px;';
+        more.textContent = '+' + (count - 12);
+        display.appendChild(more);
+      }
+    }
+
+    // Memory functions
+    let selectedFile = null;
+
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.add('active');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.remove('active');
+      document.getElementById('uploadPreview').style.display = 'none';
+      document.getElementById('uploadArea').style.display = '';
+      document.getElementById('memoryTitle').value = '';
+      document.getElementById('memoryNote').value = '';
+      document.getElementById('memoryAuthor').value = '';
+      selectedFile = null;
+    }
+
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    function handleFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const preview = document.getElementById('uploadPreview');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        uploadArea.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function submitMemory() {
+      const title = document.getElementById('memoryTitle').value.trim();
+      const note = document.getElementById('memoryNote').value.trim();
+      const author = document.getElementById('memoryAuthor').value.trim() || 'Anonymous';
+
+      if (!title) return alert('Please add a title');
+
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('note', note);
+      formData.append('author', author);
+      if (selectedFile) formData.append('photo', selectedFile);
+
+      try {
+        const res = await fetch('/api/memories', {
+          method: 'POST',
+          body: formData
+        });
+        if (res.ok) {
+          const memories = await fetch('/api/memories').then(r => r.json());
+          renderMemories(memories);
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || 'Could not save memory. Please try again.');
+        }
+      } catch (e) {
+        console.error('Failed to save memory:', e);
+        alert('Could not save memory. Please try again.');
+      }
+      closeUploadModal();
+    }
+
+    function renderMemories(memories) {
+      const grid = document.getElementById('memoriesGrid');
+      const addCard = grid.querySelector('.add-memory-card');
+      grid.innerHTML = '';
+
+      (Array.isArray(memories) ? memories : Object.values(memories || {})).forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        const safeNote = (m.note || '').replace(/"/g, '&quot;');
+        card.innerHTML = `
+          <div class="memory-photo">
+            ${m.photo ? `<img src="${m.photo}" alt="${(m.title || '').replace(/"/g, '&quot;')}">` : '<span class="memory-photo-placeholder">📷</span>'}
+          </div>
+          <div class="memory-content">
+            <div class="memory-date">${m.date || ''}</div>
+            <div class="memory-title">${(m.title || '').replace(/</g, '&lt;')}</div>
+            <div class="memory-note">"${safeNote.replace(/</g, '&lt;')}"</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      grid.appendChild(addCard);
+    }
+
+    // Message functions
+    async function submitMessage() {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ author: 'Anonymous', text })
+        });
+        if (res.ok) {
+          const msg = await res.json();
+          const list = document.getElementById('messagesList');
+          const card = createMessageCard(msg);
+          list.insertBefore(card, list.firstChild);
+        }
+      } catch (e) {
+        console.error('Failed to send message:', e);
+      }
+      input.value = '';
+    }
+
+    function renderMessages(messages) {
+      const list = document.getElementById('messagesList');
+      list.innerHTML = '';
+
+      const arr = Array.isArray(messages) ? messages : Object.values(messages || {});
+      arr.forEach(m => list.appendChild(createMessageCard(m)));
+    }
+
+    function createMessageCard(m) {
+      const card = document.createElement('div');
+      card.className = 'message-card';
+      const ago = getTimeAgo(m.timestamp);
+      const safeAuthor = (m.author || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      const safeText = (m.text || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      card.innerHTML = `
+        <div class="message-header">
+          <span class="message-author">${safeAuthor}</span>
+          <span class="message-time">${ago}</span>
+        </div>
+        <p class="message-text">${safeText}</p>
+      `;
+      return card;
+    }
+
+    function getTimeAgo(ts) {
+      const diff = Date.now() - ts;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return mins + ' min ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + ' hr ago';
+      const days = Math.floor(hrs / 24);
+      return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+    }
+
+    // Enter key for message
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitMessage();
+    });
+  </script>
+</body>
+
+</html>
