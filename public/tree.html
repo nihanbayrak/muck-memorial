@@ -517,6 +517,7 @@
         // State
         let nodes = [];
         let edges = [];
+        let nodeMap = new Map(); // O(1) node lookups
         let nextId = 1;
         let hoveredNode = null;
         let draggedNode = null;
@@ -531,6 +532,8 @@
         // Animation
         let glowNodes = [];
         let particles = [];
+        let simActive = true; // pause simulation when settled
+        let simCooldown = 0;
 
         // Resize
         function resize() {
@@ -585,64 +588,80 @@
             };
 
             nodes.push(node);
+            nodeMap.set(node.id, node);
             if (parentId != null) edges.push({ from: parentId, to: node.id });
             glowNodes.push({ id: node.id, startTime: Date.now() });
 
-            for (let i = 0; i < 6; i++) {
+            // Fewer particles for performance
+            for (let i = 0; i < 3; i++) {
                 particles.push({
                     x: node.x, y: node.y,
-                    vx: (Math.random() - 0.5) * 2.5,
-                    vy: (Math.random() - 0.5) * 2.5,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
                     life: 1, color: node.color,
                 });
             }
+
+            // Wake simulation
+            simActive = true;
+            simCooldown = 120; // frames before checking settle
 
             updateStats();
             return node;
         }
 
-        // Force simulation
+        // Force simulation (optimized)
         function simulate() {
+            if (!simActive) return;
+
             const repulsion = 3000;
             const edgeLength = 120;
             const edgeStrength = 0.04;
             const damping = 0.88;
             const gravity = 0.002;
+            const n = nodes.length;
 
             let cx = 0, cy = 0;
-            nodes.forEach(n => { cx += n.x; cy += n.y; });
-            if (nodes.length) { cx /= nodes.length; cy /= nodes.length; }
+            for (let i = 0; i < n; i++) { cx += nodes[i].x; cy += nodes[i].y; }
+            if (n) { cx /= n; cy /= n; }
 
-            for (let i = 0; i < nodes.length; i++) {
+            let totalV = 0;
+
+            for (let i = 0; i < n; i++) {
                 const a = nodes[i];
                 if (a === draggedNode) continue;
 
                 let fx = 0, fy = 0;
 
-                for (let j = 0; j < nodes.length; j++) {
+                // Repulsion — skip very distant pairs
+                for (let j = 0; j < n; j++) {
                     if (i === j) continue;
                     const b = nodes[j];
-                    let dx = a.x - b.x;
-                    let dy = a.y - b.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                    let force = repulsion / (dist * dist);
+                    const dx = a.x - b.x;
+                    const dy = a.y - b.y;
+                    const d2 = dx * dx + dy * dy;
+                    if (d2 > 250000) continue; // skip if > 500px apart
+                    const dist = Math.sqrt(d2) || 1;
+                    const force = repulsion / d2;
                     fx += (dx / dist) * force;
                     fy += (dy / dist) * force;
                 }
 
-                edges.forEach(e => {
+                // Edge springs — use nodeMap for O(1)
+                for (let e = 0; e < edges.length; e++) {
+                    const edge = edges[e];
                     let other = null;
-                    if (e.from === a.id) other = nodes.find(n => n.id === e.to);
-                    else if (e.to === a.id) other = nodes.find(n => n.id === e.from);
-                    if (!other) return;
+                    if (edge.from === a.id) other = nodeMap.get(edge.to);
+                    else if (edge.to === a.id) other = nodeMap.get(edge.from);
+                    if (!other) continue;
 
-                    let dx = other.x - a.x;
-                    let dy = other.y - a.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                    let force = (dist - edgeLength) * edgeStrength;
+                    const dx = other.x - a.x;
+                    const dy = other.y - a.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const force = (dist - edgeLength) * edgeStrength;
                     fx += (dx / dist) * force;
                     fy += (dy / dist) * force;
-                });
+                }
 
                 fx += (cx - a.x) * gravity;
                 fy += (cy - a.y) * gravity;
@@ -651,6 +670,14 @@
                 a.vy = (a.vy + fy) * damping;
                 a.x += a.vx;
                 a.y += a.vy;
+                totalV += Math.abs(a.vx) + Math.abs(a.vy);
+            }
+
+            // Settle detection
+            if (simCooldown > 0) {
+                simCooldown--;
+            } else if (totalV < 0.5) {
+                simActive = false;
             }
         }
 
@@ -669,25 +696,28 @@
             const h = window.innerHeight;
             ctx.clearRect(0, 0, w, h);
 
-            // Draw edges (branches)
+            // Draw edges (branches) — use nodeMap
             edges.forEach(e => {
-                const from = nodes.find(n => n.id === e.from);
-                const to = nodes.find(n => n.id === e.to);
+                const from = nodeMap.get(e.from);
+                const to = nodeMap.get(e.to);
                 if (!from || !to) return;
 
                 const p1 = worldToScreen(from.x, from.y);
                 const p2 = worldToScreen(to.x, to.y);
+
+                // Skip off-screen edges
+                if (p1.x < -50 && p2.x < -50) return;
+                if (p1.x > w + 50 && p2.x > w + 50) return;
+                if (p1.y < -50 && p2.y < -50) return;
+                if (p1.y > h + 50 && p2.y > h + 50) return;
+
                 const mx = (p1.x + p2.x) / 2;
                 const my = (p1.y + p2.y) / 2 - 12 * camera.zoom;
 
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.quadraticCurveTo(mx, my, p2.x, p2.y);
-
-                const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-                grad.addColorStop(0, from.color + '30');
-                grad.addColorStop(1, to.color + '50');
-                ctx.strokeStyle = grad;
+                ctx.strokeStyle = from.color + '40';
                 ctx.lineWidth = Math.max(1.5, 2 * camera.zoom);
                 ctx.stroke();
             });
@@ -737,23 +767,15 @@
                     ctx.stroke();
                 }
 
-                // Main node
-                const grad = ctx.createRadialGradient(sp.x - r * 0.3, sp.y - r * 0.3, r * 0.1, sp.x, sp.y, r);
-                grad.addColorStop(0, node.color + 'cc');
-                grad.addColorStop(0.7, node.color + '88');
-                grad.addColorStop(1, node.color + '33');
-
+                // Main node — simplified gradient
                 ctx.beginPath();
                 ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2);
-                ctx.fillStyle = grad;
+                ctx.fillStyle = node.color + '99';
                 ctx.fill();
-
-                // Inner ring
                 ctx.beginPath();
-                ctx.arc(sp.x, sp.y, r * 0.65, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
+                ctx.arc(sp.x, sp.y, r * 0.7, 0, Math.PI * 2);
+                ctx.fillStyle = node.color + 'cc';
+                ctx.fill();
 
                 // Label
                 if (camera.zoom > 0.4) {
@@ -831,6 +853,7 @@
         });
 
         canvas.addEventListener('mousedown', (e) => {
+            simActive = true; simCooldown = 60;
             const node = getNodeAt(e.clientX, e.clientY);
             if (node) {
                 const wp = screenToWorld(e.clientX, e.clientY);
@@ -856,6 +879,7 @@
         let touchStartZoom = 1;
 
         canvas.addEventListener('touchstart', (e) => {
+            simActive = true; simCooldown = 60;
             if (e.touches.length === 1) {
                 const t = e.touches[0];
                 const node = getNodeAt(t.clientX, t.clientY);
