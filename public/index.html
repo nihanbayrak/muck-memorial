@@ -974,10 +974,7 @@
     </a>
 
 
-    <div class="scroll-hint">
-      <span>Scroll to remember</span>
-      <span>↓</span>
-    </div>
+
   </section>
 
   <!-- Candle Section -->
@@ -1364,6 +1361,39 @@
     document.getElementById('messageInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') submitMessage();
     });
+  </script>
+
+  <!-- Ambient floating dots (same as Memory Tree) -->
+  <canvas id="ambientCanvas"
+    style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
+  <script>
+    (function () {
+      const c = document.getElementById('ambientCanvas');
+      const x = c.getContext('2d');
+      function resize() {
+        c.width = window.innerWidth * devicePixelRatio;
+        c.height = window.innerHeight * devicePixelRatio;
+        x.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+      function draw() {
+        const w = window.innerWidth, h = window.innerHeight;
+        x.clearRect(0, 0, w, h);
+        const t = Date.now() * 0.001;
+        for (let i = 0; i < 20; i++) {
+          const ax = Math.sin(t * 0.2 + i * 1.7) * w * 0.45 + w / 2;
+          const ay = Math.cos(t * 0.15 + i * 2.3) * h * 0.45 + h / 2;
+          const a = 0.03 + Math.sin(t + i) * 0.02;
+          x.beginPath();
+          x.arc(ax, ay, 1.5, 0, Math.PI * 2);
+          x.fillStyle = `rgba(232, 196, 160, ${a})`;
+          x.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
   </script>
 </body>
 
