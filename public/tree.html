@@ -46,7 +46,11 @@
             font-family: 'Playfair Display', serif;
             overflow: hidden;
             height: 100vh;
+            height: 100dvh;
             width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
 
         #canvas-container {
@@ -159,10 +163,19 @@
         .input-area {
             position: fixed;
             bottom: 32px;
+            bottom: max(32px, env(safe-area-inset-bottom, 0px));
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
             width: min(560px, calc(100% - 32px));
+        }
+
+        @media (max-width: 768px) {
+            .input-area {
+                bottom: 16px;
+                bottom: max(16px, env(safe-area-inset-bottom, 0px));
+                width: calc(100% - 24px);
+            }
         }
 
         .input-wrapper {
@@ -924,9 +937,13 @@
             const bh = maxY - minY;
             const w = window.innerWidth;
             const h = window.innerHeight;
-            camera.zoom = Math.min(w / bw, h / bh) * 0.75;
+            // Account for header (70px) and input area (90px)
+            const padTop = 70;
+            const padBottom = 90;
+            const availH = h - padTop - padBottom;
+            camera.zoom = Math.min(w / bw, availH / bh) * 0.75;
             camera.x = w / 2 - ((minX + maxX) / 2) * camera.zoom;
-            camera.y = h / 2 - ((minY + maxY) / 2) * camera.zoom;
+            camera.y = padTop + availH / 2 - ((minY + maxY) / 2) * camera.zoom;
         }
 
         // --- Add message to tree AND server ---
@@ -943,18 +960,20 @@
 
                 if (res.ok) {
                     const msg = await res.json();
-                    // Attach to a random existing node or be root
                     const parentId = nodes.length > 0 ? nodes[Math.floor(Math.random() * nodes.length)].id : null;
                     createNode(msg.text, msg.author, parentId, msg.timestamp);
                 }
             } catch (err) {
                 console.error('Failed to send message:', err);
-                // Still add locally
                 const parentId = nodes.length > 0 ? nodes[Math.floor(Math.random() * nodes.length)].id : null;
                 createNode(text.trim(), '', parentId);
             }
 
             input.value = '';
+            input.blur(); // Close mobile keyboard
+
+            // Auto-fit so the new node is visible
+            setTimeout(() => fitCamera(), 300);
         }
 
         document.getElementById('btn-add').addEventListener('click', () => addMessage(input.value));
