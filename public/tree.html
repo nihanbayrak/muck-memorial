@@ -805,7 +805,8 @@
             canvas.style.cursor = node ? 'pointer' : 'grab';
 
             if (node) {
-                tooltip.querySelector('#tooltip-author').textContent = node.author || 'Anonymous';
+                const authorName = node.author && node.author !== 'Anonymous' ? node.author : '';
+                tooltip.querySelector('#tooltip-author').textContent = authorName;
                 tooltip.querySelector('#tooltip-text').textContent = node.text;
                 tooltip.querySelector('#tooltip-time').textContent = new Date(node.createdAt).toLocaleString();
                 tooltip.style.left = Math.min(e.clientX + 16, window.innerWidth - 320) + 'px';
@@ -937,7 +938,7 @@
                 const res = await fetch('/api/messages', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text.trim(), author: 'Anonymous' })
+                    body: JSON.stringify({ text: text.trim() })
                 });
 
                 if (res.ok) {
@@ -950,7 +951,7 @@
                 console.error('Failed to send message:', err);
                 // Still add locally
                 const parentId = nodes.length > 0 ? nodes[Math.floor(Math.random() * nodes.length)].id : null;
-                createNode(text.trim(), 'Anonymous', parentId);
+                createNode(text.trim(), '', parentId);
             }
 
             input.value = '';

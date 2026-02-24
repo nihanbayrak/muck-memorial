@@ -1305,7 +1305,7 @@
         const res = await fetch('/api/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ author: 'Anonymous', text })
+          body: JSON.stringify({ text })
         });
         if (res.ok) {
           const msg = await res.json();
@@ -1331,7 +1331,8 @@
       const card = document.createElement('div');
       card.className = 'message-card';
       const ago = getTimeAgo(m.timestamp);
-      const safeAuthor = (m.author || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      const rawAuthor = (m.author || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+      const safeAuthor = rawAuthor === 'Anonymous' ? '' : rawAuthor;
       const safeText = (m.text || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
       card.innerHTML = `
         <div class="message-header">
