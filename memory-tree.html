@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hafıza Ağacı — Memory Tree</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=JetBrains+Mono:wght@300;400&display=swap');
+
+  :root {
+    --bg: #0a0b0f;
+    --bg-subtle: #12131a;
+    --trunk: #3d2b1f;
+    --trunk-light: #5c4033;
+    --leaf-1: #2d5a27;
+    --leaf-2: #1a7a3a;
+    --leaf-3: #4a8c3f;
+    --glow: #7fff7f;
+    --gold: #c9a84c;
+    --gold-dim: #8a6d2b;
+    --text: #e8e4d9;
+    --text-dim: #7a7668;
+    --accent: #4ade80;
+    --root-color: #c9a84c;
+    --node-shadow: rgba(74, 222, 128, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #canvas-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Ambient particles background */
+  .ambient-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(45, 90, 39, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(74, 140, 63, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(201, 168, 76, 0.03) 0%, transparent 60%);
+  }
+
+  /* Header */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(10,11,15,0.95), transparent);
+    pointer-events: none;
+  }
+
+  .header > * { pointer-events: auto; }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    position: relative;
+  }
+
+  .logo-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .logo-text {
+    font-size: 1.4rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .logo-sub {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .stat-value {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  /* Input area */
+  .input-area {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    width: min(600px, calc(100% - 48px));
+  }
+
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: rgba(18, 19, 26, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(74, 222, 128, 0.12);
+    border-radius: 16px;
+    padding: 4px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .input-wrapper:focus-within {
+    border-color: rgba(74, 222, 128, 0.35);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.08), inset 0 0 20px rgba(74, 222, 128, 0.03);
+  }
+
+  .input-wrapper input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    padding: 14px 20px;
+    letter-spacing: 0.02em;
+  }
+
+  .input-wrapper input::placeholder {
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .btn-add {
+    background: linear-gradient(135deg, var(--leaf-2), var(--leaf-1));
+    border: none;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    margin-right: 2px;
+  }
+
+  .btn-add:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  }
+
+  .btn-add svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    z-index: 200;
+    background: rgba(18, 19, 26, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    max-width: 320px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  .tooltip-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  .tooltip-depth {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gold-dim);
+    margin-top: 6px;
+  }
+
+  /* Node pulse animation */
+  @keyframes nodePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  /* Intro overlay */
+  .intro-hint {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    animation: fadeInUp 1s ease 0.5s both;
+    text-align: center;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* Glow ring on new node */
+  @keyframes glowRing {
+    0% { opacity: 0.8; transform: scale(0.5); }
+    100% { opacity: 0; transform: scale(2.5); }
+  }
+
+  /* Context menu */
+  .context-menu {
+    position: fixed;
+    z-index: 300;
+    background: rgba(18, 19, 26, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(74, 222, 128, 0.15);
+    border-radius: 10px;
+    padding: 6px;
+    display: none;
+    min-width: 160px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  .context-menu.visible { display: block; }
+
+  .context-menu button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    padding: 8px 14px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+
+  .context-menu button:hover {
+    background: rgba(74, 222, 128, 0.1);
+  }
+
+  .zoom-controls {
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .zoom-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(18, 19, 26, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(74, 222, 128, 0.12);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .zoom-btn:hover {
+    border-color: rgba(74, 222, 128, 0.3);
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M16 28c0 0-2-3-2-8V12c0-2 0-4 2-8c2 4 2 6 2 8v8c0 5-2 8-2 8z" fill="var(--trunk-light)" opacity="0.8"/>
+        <circle cx="16" cy="8" r="5" fill="var(--leaf-2)" opacity="0.6"/>
+        <circle cx="11" cy="12" r="4" fill="var(--leaf-1)" opacity="0.5"/>
+        <circle cx="21" cy="12" r="4" fill="var(--leaf-3)" opacity="0.5"/>
+        <circle cx="16" cy="6" r="3" fill="var(--leaf-3)" opacity="0.7"/>
+        <circle cx="16" cy="26" r="2" fill="var(--gold)" opacity="0.6"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Hafıza Ağacı</div>
+      <div class="logo-sub">Memory Tree — Interactive Sentence Graph</div>
+    </div>
+  </div>
+  <div class="stats">
+    <span>NODES <span class="stat-value" id="stat-nodes">0</span></span>
+    <span>EDGES <span class="stat-value" id="stat-edges">0</span></span>
+    <span>DEPTH <span class="stat-value" id="stat-depth">0</span></span>
+  </div>
+</div>
+
+<div id="canvas-container">
+  <canvas id="tree-canvas"></canvas>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-id" id="tooltip-id"></div>
+  <div id="tooltip-text"></div>
+  <div class="tooltip-depth" id="tooltip-depth"></div>
+</div>
+
+<div class="context-menu" id="context-menu">
+  <button id="ctx-add-child">🌿 Alt düğüm ekle</button>
+  <button id="ctx-set-parent">🔗 Bu düğümü ebeveyn yap</button>
+  <button id="ctx-delete">🍂 Sil</button>
+</div>
+
+<div class="intro-hint" id="intro-hint">
+  Bir cümle yazın ve ağaca ekleyin — her düğüm bir hafıza yaprağı olsun ✦
+</div>
+
+<div class="input-area">
+  <div class="input-wrapper">
+    <input type="text" id="sentence-input" placeholder="Bir cümle yazın, ağaca yaprak ekleyin..." autofocus />
+    <button class="btn-add" id="btn-add" title="Ekle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="zoom-controls">
+  <button class="zoom-btn" id="zoom-in">+</button>
+  <button class="zoom-btn" id="zoom-out">−</button>
+  <button class="zoom-btn" id="zoom-fit" title="Sığdır">◎</button>
+</div>
+
+<script>
+// ============================================
+// MEMORY TREE — Graph-Based Sentence Tree
+// ============================================
+
+const canvas = document.getElementById('tree-canvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const contextMenu = document.getElementById('context-menu');
+const input = document.getElementById('sentence-input');
+const introHint = document.getElementById('intro-hint');
+
+// --- State ---
+let nodes = [];
+let edges = [];
+let nextId = 1;
+let selectedParentId = null;
+let hoveredNode = null;
+let draggedNode = null;
+let dragOffset = { x: 0, y: 0 };
+
+// Camera
+let camera = { x: 0, y: 0, zoom: 1 };
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+let camStart = { x: 0, y: 0 };
+
+// Animation
+let glowNodes = []; // { id, startTime }
+let particles = [];
+
+// --- Resize ---
+function resize() {
+  canvas.width = window.innerWidth * devicePixelRatio;
+  canvas.height = window.innerHeight * devicePixelRatio;
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- Color palette for depth ---
+const depthColors = [
+  '#c9a84c', // root — gold
+  '#4ade80', // depth 1 — bright green
+  '#2dd4bf', // depth 2 — teal
+  '#60a5fa', // depth 3 — blue
+  '#a78bfa', // depth 4 — purple
+  '#f472b6', // depth 5 — pink
+  '#fb923c', // depth 6 — orange
+  '#facc15', // depth 7 — yellow
+];
+
+function getNodeColor(depth) {
+  return depthColors[Math.min(depth, depthColors.length - 1)];
+}
+
+// --- Node class ---
+function createNode(sentence, parentId = null) {
+  const parent = parentId != null ? nodes.find(n => n.id === parentId) : null;
+  const depth = parent ? parent.depth + 1 : 0;
+
+  // Position: near parent with offset, or center
+  let x, y;
+  if (parent) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 100 + Math.random() * 60;
+    x = parent.x + Math.cos(angle) * dist;
+    y = parent.y + Math.sin(angle) * dist;
+  } else {
+    x = (window.innerWidth / 2 - camera.x) / camera.zoom;
+    y = (window.innerHeight / 2 - camera.y) / camera.zoom;
+  }
+
+  const node = {
+    id: nextId++,
+    sentence,
+    depth,
+    parentId,
+    x, y,
+    vx: 0, vy: 0,
+    radius: Math.max(18, Math.min(32, 12 + sentence.length * 0.25)),
+    color: getNodeColor(depth),
+    createdAt: Date.now(),
+  };
+
+  nodes.push(node);
+
+  if (parentId != null) {
+    edges.push({ from: parentId, to: node.id });
+  }
+
+  // Glow effect
+  glowNodes.push({ id: node.id, startTime: Date.now() });
+
+  // Spawn particles
+  for (let i = 0; i < 8; i++) {
+    particles.push({
+      x: node.x, y: node.y,
+      vx: (Math.random() - 0.5) * 3,
+      vy: (Math.random() - 0.5) * 3,
+      life: 1,
+      color: node.color,
+    });
+  }
+
+  updateStats();
+  return node;
+}
+
+// --- Force simulation ---
+function simulate() {
+  const repulsion = 3500;
+  const edgeLength = 130;
+  const edgeStrength = 0.04;
+  const damping = 0.88;
+  const gravity = 0.002;
+
+  // Center of mass
+  let cx = 0, cy = 0;
+  nodes.forEach(n => { cx += n.x; cy += n.y; });
+  if (nodes.length) { cx /= nodes.length; cy /= nodes.length; }
+
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    if (a === draggedNode) continue;
+
+    let fx = 0, fy = 0;
+
+    // Repulsion between all nodes
+    for (let j = 0; j < nodes.length; j++) {
+      if (i === j) continue;
+      const b = nodes[j];
+      let dx = a.x - b.x;
+      let dy = a.y - b.y;
+      let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      let force = repulsion / (dist * dist);
+      fx += (dx / dist) * force;
+      fy += (dy / dist) * force;
+    }
+
+    // Edge attraction
+    edges.forEach(e => {
+      let other = null;
+      if (e.from === a.id) other = nodes.find(n => n.id === e.to);
+      else if (e.to === a.id) other = nodes.find(n => n.id === e.from);
+      if (!other) return;
+
+      let dx = other.x - a.x;
+      let dy = other.y - a.y;
+      let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      let force = (dist - edgeLength) * edgeStrength;
+      fx += (dx / dist) * force;
+      fy += (dy / dist) * force;
+    });
+
+    // Gravity toward center
+    fx += (cx - a.x) * gravity;
+    fy += (cy - a.y) * gravity;
+
+    a.vx = (a.vx + fx) * damping;
+    a.vy = (a.vy + fy) * damping;
+    a.x += a.vx;
+    a.y += a.vy;
+  }
+}
+
+// --- Drawing ---
+function worldToScreen(wx, wy) {
+  return {
+    x: wx * camera.zoom + camera.x,
+    y: wy * camera.zoom + camera.y,
+  };
+}
+
+function screenToWorld(sx, sy) {
+  return {
+    x: (sx - camera.x) / camera.zoom,
+    y: (sy - camera.y) / camera.zoom,
+  };
+}
+
+function draw() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  ctx.clearRect(0, 0, w, h);
+
+  // Draw edges (branches)
+  edges.forEach(e => {
+    const from = nodes.find(n => n.id === e.from);
+    const to = nodes.find(n => n.id === e.to);
+    if (!from || !to) return;
+
+    const p1 = worldToScreen(from.x, from.y);
+    const p2 = worldToScreen(to.x, to.y);
+
+    // Organic curved branch
+    const mx = (p1.x + p2.x) / 2;
+    const my = (p1.y + p2.y) / 2 - 15 * camera.zoom;
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.quadraticCurveTo(mx, my, p2.x, p2.y);
+
+    const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+    grad.addColorStop(0, from.color + '40');
+    grad.addColorStop(1, to.color + '60');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = Math.max(1.5, 2.5 * camera.zoom);
+    ctx.stroke();
+  });
+
+  // Draw particles
+  particles = particles.filter(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.02;
+    if (p.life <= 0) return false;
+
+    const sp = worldToScreen(p.x, p.y);
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, 2 * p.life * camera.zoom, 0, Math.PI * 2);
+    ctx.fillStyle = p.color + Math.floor(p.life * 80).toString(16).padStart(2, '0');
+    ctx.fill();
+    return true;
+  });
+
+  // Draw nodes
+  const now = Date.now();
+  nodes.forEach(node => {
+    const sp = worldToScreen(node.x, node.y);
+    const r = node.radius * camera.zoom;
+
+    // Glow for new nodes
+    const glow = glowNodes.find(g => g.id === node.id);
+    if (glow) {
+      const elapsed = (now - glow.startTime) / 1000;
+      if (elapsed < 2) {
+        const alpha = Math.max(0, 0.5 - elapsed * 0.25);
+        const size = r + elapsed * 30 * camera.zoom;
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, size, 0, Math.PI * 2);
+        ctx.fillStyle = node.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+        ctx.fill();
+      } else {
+        glowNodes = glowNodes.filter(g => g.id !== node.id);
+      }
+    }
+
+    // Hover glow
+    if (hoveredNode === node) {
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, r + 8, 0, Math.PI * 2);
+      ctx.fillStyle = node.color + '18';
+      ctx.fill();
+      ctx.strokeStyle = node.color + '40';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Selected parent indicator
+    if (selectedParentId === node.id) {
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, r + 12, 0, Math.PI * 2);
+      ctx.strokeStyle = '#c9a84c80';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Main node circle
+    const grad = ctx.createRadialGradient(sp.x - r * 0.3, sp.y - r * 0.3, r * 0.1, sp.x, sp.y, r);
+    grad.addColorStop(0, node.color + 'dd');
+    grad.addColorStop(0.7, node.color + '99');
+    grad.addColorStop(1, node.color + '44');
+
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Inner ring
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, r * 0.7, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Node label (truncated)
+    if (camera.zoom > 0.4) {
+      const maxChars = Math.floor(r / (4.5 * camera.zoom));
+      let label = node.sentence;
+      if (label.length > maxChars) label = label.substring(0, maxChars) + '…';
+
+      ctx.font = `${Math.max(9, 11 * camera.zoom)}px 'Cormorant Garamond', serif`;
+      ctx.fillStyle = '#ffffffcc';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, sp.x, sp.y);
+    }
+
+    // Depth number
+    if (camera.zoom > 0.6) {
+      ctx.font = `${Math.max(7, 8 * camera.zoom)}px 'JetBrains Mono', monospace`;
+      ctx.fillStyle = node.color + '80';
+      ctx.fillText(`d${node.depth}`, sp.x, sp.y + r + 10 * camera.zoom);
+    }
+  });
+
+  // Floating ambient dots
+  const time = now * 0.001;
+  for (let i = 0; i < 20; i++) {
+    const ax = Math.sin(time * 0.3 + i * 1.7) * w * 0.4 + w / 2;
+    const ay = Math.cos(time * 0.2 + i * 2.3) * h * 0.4 + h / 2;
+    const alpha = 0.03 + Math.sin(time + i) * 0.02;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`;
+    ctx.fill();
+  }
+}
+
+// --- Main loop ---
+function loop() {
+  simulate();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// --- Interaction ---
+function getNodeAt(sx, sy) {
+  const wp = screenToWorld(sx, sy);
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const n = nodes[i];
+    const dx = wp.x - n.x;
+    const dy = wp.y - n.y;
+    if (dx * dx + dy * dy < n.radius * n.radius) return n;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousemove', (e) => {
+  if (isPanning) {
+    camera.x = camStart.x + (e.clientX - panStart.x);
+    camera.y = camStart.y + (e.clientY - panStart.y);
+    return;
+  }
+
+  if (draggedNode) {
+    const wp = screenToWorld(e.clientX, e.clientY);
+    draggedNode.x = wp.x + dragOffset.x;
+    draggedNode.y = wp.y + dragOffset.y;
+    draggedNode.vx = 0;
+    draggedNode.vy = 0;
+    return;
+  }
+
+  const node = getNodeAt(e.clientX, e.clientY);
+  hoveredNode = node;
+  canvas.style.cursor = node ? 'pointer' : 'grab';
+
+  if (node) {
+    tooltip.querySelector('#tooltip-id').textContent = `NODE #${node.id}`;
+    tooltip.querySelector('#tooltip-text').textContent = node.sentence;
+    tooltip.querySelector('#tooltip-depth').textContent = `Depth: ${node.depth} · ${new Date(node.createdAt).toLocaleTimeString('tr-TR')}`;
+    tooltip.style.left = (e.clientX + 16) + 'px';
+    tooltip.style.top = (e.clientY - 10) + 'px';
+    tooltip.classList.add('visible');
+  } else {
+    tooltip.classList.remove('visible');
+  }
+});
+
+canvas.addEventListener('mousedown', (e) => {
+  contextMenu.classList.remove('visible');
+
+  if (e.button === 2) return; // right click handled separately
+
+  const node = getNodeAt(e.clientX, e.clientY);
+  if (node) {
+    const wp = screenToWorld(e.clientX, e.clientY);
+    draggedNode = node;
+    dragOffset.x = node.x - wp.x;
+    dragOffset.y = node.y - wp.y;
+  } else {
+    isPanning = true;
+    panStart = { x: e.clientX, y: e.clientY };
+    camStart = { x: camera.x, y: camera.y };
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  draggedNode = null;
+  isPanning = false;
+  canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+});
+
+// Right click context menu
+canvas.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  const node = getNodeAt(e.clientX, e.clientY);
+  if (!node) {
+    contextMenu.classList.remove('visible');
+    return;
+  }
+
+  contextMenu.style.left = e.clientX + 'px';
+  contextMenu.style.top = e.clientY + 'px';
+  contextMenu.classList.add('visible');
+  contextMenu.dataset.nodeId = node.id;
+});
+
+document.getElementById('ctx-add-child').addEventListener('click', () => {
+  const parentId = parseInt(contextMenu.dataset.nodeId);
+  selectedParentId = parentId;
+  contextMenu.classList.remove('visible');
+  input.focus();
+  input.placeholder = `"${nodes.find(n => n.id === parentId)?.sentence.substring(0, 30)}..." altına ekle...`;
+});
+
+document.getElementById('ctx-set-parent').addEventListener('click', () => {
+  selectedParentId = parseInt(contextMenu.dataset.nodeId);
+  contextMenu.classList.remove('visible');
+  input.focus();
+  const parent = nodes.find(n => n.id === selectedParentId);
+  input.placeholder = `"${parent?.sentence.substring(0, 30)}..." altına ekle...`;
+});
+
+document.getElementById('ctx-delete').addEventListener('click', () => {
+  const id = parseInt(contextMenu.dataset.nodeId);
+  // Remove node and connected edges
+  nodes = nodes.filter(n => n.id !== id);
+  edges = edges.filter(e => e.from !== id && e.to !== id);
+  if (selectedParentId === id) selectedParentId = null;
+  contextMenu.classList.remove('visible');
+  updateStats();
+});
+
+// Close context menu on click elsewhere
+document.addEventListener('click', (e) => {
+  if (!contextMenu.contains(e.target)) {
+    contextMenu.classList.remove('visible');
+  }
+});
+
+// Zoom
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const zoomFactor = e.deltaY > 0 ? 0.92 : 1.08;
+  const newZoom = Math.max(0.15, Math.min(4, camera.zoom * zoomFactor));
+
+  // Zoom toward cursor
+  const wx = (e.clientX - camera.x) / camera.zoom;
+  const wy = (e.clientY - camera.y) / camera.zoom;
+  camera.zoom = newZoom;
+  camera.x = e.clientX - wx * camera.zoom;
+  camera.y = e.clientY - wy * camera.zoom;
+}, { passive: false });
+
+document.getElementById('zoom-in').addEventListener('click', () => {
+  camera.zoom = Math.min(4, camera.zoom * 1.3);
+});
+document.getElementById('zoom-out').addEventListener('click', () => {
+  camera.zoom = Math.max(0.15, camera.zoom * 0.7);
+});
+document.getElementById('zoom-fit').addEventListener('click', () => {
+  if (!nodes.length) return;
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  nodes.forEach(n => {
+    minX = Math.min(minX, n.x - 50);
+    maxX = Math.max(maxX, n.x + 50);
+    minY = Math.min(minY, n.y - 50);
+    maxY = Math.max(maxY, n.y + 50);
+  });
+  const bw = maxX - minX;
+  const bh = maxY - minY;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  camera.zoom = Math.min(w / bw, h / bh) * 0.8;
+  camera.x = w / 2 - ((minX + maxX) / 2) * camera.zoom;
+  camera.y = h / 2 - ((minY + maxY) / 2) * camera.zoom;
+});
+
+// --- Add sentence ---
+function addSentence(sentence) {
+  if (!sentence.trim()) return;
+
+  if (introHint) introHint.style.display = 'none';
+
+  const parentId = selectedParentId ?? (nodes.length > 0 ? nodes[nodes.length - 1].id : null);
+  createNode(sentence.trim(), nodes.length === 0 ? null : parentId);
+
+  selectedParentId = null;
+  input.placeholder = 'Bir cümle yazın, ağaca yaprak ekleyin...';
+  input.value = '';
+}
+
+document.getElementById('btn-add').addEventListener('click', () => addSentence(input.value));
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addSentence(input.value);
+});
+
+// --- Stats ---
+function updateStats() {
+  document.getElementById('stat-nodes').textContent = nodes.length;
+  document.getElementById('stat-edges').textContent = edges.length;
+  const maxDepth = nodes.reduce((m, n) => Math.max(m, n.depth), 0);
+  document.getElementById('stat-depth').textContent = maxDepth;
+}
+
+// --- Seed with Lorem Ipsum sentences (PoC) ---
+const loremSentences = [
+  "Her şey bir tohumla başlar, küçük ama sonsuz potansiyelle.",
+  "Kökler derinlere iner, görünmez ama güçlü.",
+  "İlk dal gökyüzüne doğru uzanır, ışığı arar.",
+  "Yapraklar rüzgârda fısıldar, geçmişin hikâyelerini anlatır.",
+  "Zaman bir halka bırakır gövdede, her yıl bir hatıra.",
+  "Kuşlar dallardan şarkı söyler, ağacı yaşayan bir sahneye çevirir.",
+  "Gölge altında düşünceler olgunlaşır.",
+  "Mevsimler değişir ama kökler yerinde kalır.",
+  "Yeni filizler umudun ta kendisidir.",
+  "Ağaç, hafızanın yaşayan haritasıdır.",
+  "Fırtınalar dalları büker ama kıramaz.",
+  "Her düşen yaprak, toprağa geri dönen bir bilgeliktir.",
+];
+
+// Build a tree structure
+function seedTree() {
+  // Root
+  createNode(loremSentences[0], null);
+
+  // Depth 1 — 3 children of root
+  createNode(loremSentences[1], 1);
+  createNode(loremSentences[2], 1);
+  createNode(loremSentences[3], 1);
+
+  // Depth 2
+  createNode(loremSentences[4], 2);
+  createNode(loremSentences[5], 3);
+  createNode(loremSentences[6], 4);
+
+  // Depth 3
+  createNode(loremSentences[7], 5);
+  createNode(loremSentences[8], 6);
+  createNode(loremSentences[9], 7);
+
+  // Depth 4
+  createNode(loremSentences[10], 8);
+  createNode(loremSentences[11], 10);
+
+  // Center camera
+  setTimeout(() => {
+    camera.x = window.innerWidth / 2;
+    camera.y = window.innerHeight / 2;
+    camera.zoom = 0.9;
+  }, 100);
+}
+
+seedTree();
+</script>
+</body>
+</html>

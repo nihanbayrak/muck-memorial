@@ -982,7 +982,7 @@
 
     <div class="candles-display" id="candlesDisplay"></div>
 
-    <button class="candle-btn" id="candleBtn" onclick="lightCandle()">
+    <button class="candle-btn" id="candleBtn">
       🕯️ &nbsp; Light a Candle
     </button>
 
@@ -1000,7 +1000,7 @@
     <div class="memories-grid" id="memoriesGrid">
       <!-- Memory cards will be inserted here -->
 
-      <div class="memory-card add-memory-card" onclick="openUploadModal()">
+      <div class="memory-card add-memory-card" id="addMemoryBtn">
         <div class="add-icon">🐾</div>
         <div class="add-text">Add a Memory</div>
       </div>
@@ -1014,7 +1014,7 @@
 
     <div class="message-form">
       <input type="text" class="message-input" id="messageInput" placeholder="Leave a message for Muck...">
-      <button class="message-submit" onclick="submitMessage()">Send</button>
+      <button class="message-submit" id="messageSubmitBtn">Send</button>
     </div>
 
     <div class="messages-list" id="messagesList"></div>
@@ -1059,7 +1059,7 @@
   <!-- Upload Modal -->
   <div class="modal-overlay" id="uploadModal">
     <div class="modal">
-      <button class="modal-close" onclick="closeUploadModal()">×</button>
+      <button class="modal-close" id="modalCloseBtn">×</button>
       <h3 class="modal-title">Share a Memory</h3>
 
       <div class="upload-area" id="uploadArea">
@@ -1085,7 +1085,7 @@
         <input type="text" class="form-input" id="memoryAuthor" placeholder="Your name">
       </div>
 
-      <button class="modal-submit" onclick="submitMemory()">Share Memory</button>
+      <button class="modal-submit" id="memorySubmitBtn">Share Memory</button>
     </div>
   </div>
 
@@ -1353,7 +1353,12 @@
       return days + ' day' + (days > 1 ? 's' : '') + ' ago';
     }
 
-    // Enter key for message
+    // Event listeners (CSP-compliant, no inline onclick)
+    document.getElementById('candleBtn').addEventListener('click', lightCandle);
+    document.getElementById('addMemoryBtn').addEventListener('click', openUploadModal);
+    document.getElementById('messageSubmitBtn').addEventListener('click', submitMessage);
+    document.getElementById('modalCloseBtn').addEventListener('click', closeUploadModal);
+    document.getElementById('memorySubmitBtn').addEventListener('click', submitMemory);
     document.getElementById('messageInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') submitMessage();
     });
