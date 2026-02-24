@@ -732,8 +732,69 @@
       padding: 40px;
       max-width: 500px;
       width: 100%;
+      max-height: calc(100vh - 40px);
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       position: relative;
       animation: modalIn 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .modal {
+        padding: 20px;
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+        border-radius: 8px 8px 0 0;
+      }
+
+      .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+      }
+
+      .modal-title {
+        font-size: 22px;
+        margin-bottom: 16px;
+      }
+
+      .upload-area {
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .upload-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      .upload-text {
+        font-size: 13px;
+      }
+
+      .upload-hint {
+        font-size: 11px;
+      }
+
+      .form-group {
+        margin-bottom: 12px;
+      }
+
+      .form-input {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .form-textarea {
+        min-height: 60px;
+      }
+
+      .modal-submit {
+        padding: 14px;
+        position: sticky;
+        bottom: 0;
+        margin-top: 8px;
+      }
     }
 
     @keyframes modalIn {
@@ -960,7 +1021,7 @@
     </div>
 
     <h1 class="name">Muck</h1>
-    <p class="dates">2018 — 2024</p>
+    <p class="dates">2018 — 2026</p>
     <p class="epitaph">"The heart of our office, everyone's best friend"</p>
 
     <a href="/gallery.html" class="gallery-link">
