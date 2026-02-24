@@ -176,7 +176,7 @@ app.post('/api/memories', uploadLimiter, upload.single('photo'), async (req, res
     id: Date.now(),
     title,
     note: sanitize(req.body.note, 1000),
-    author: sanitize(req.body.author, 100) || 'Anonymous',
+    author: sanitize(req.body.author, 100),
     photo_filename: photoFilename,
     date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     timestamp: Date.now()
@@ -206,7 +206,7 @@ app.post('/api/messages', uploadLimiter, (req, res) => {
 
   const msg = {
     id: Date.now(),
-    author: sanitize(req.body.author, 100) || 'Anonymous',
+    author: sanitize(req.body.author, 100),
     text,
     timestamp: Date.now()
   };
