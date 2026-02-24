@@ -58,6 +58,31 @@ const dbPath = path.join(dataDir, 'db.json');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
+// --- Seed initial data on first run (Render: persistent disk starts empty) ---
+const seedImage = path.join(__dirname, 'image.png');
+const targetImage = path.join(uploadsDir, 'image.png');
+if (fs.existsSync(seedImage) && !fs.existsSync(targetImage)) {
+  fs.copyFileSync(seedImage, targetImage);
+  console.log('📷 Seeded initial Muck photo into uploads');
+}
+if (!fs.existsSync(dbPath)) {
+  const initialDb = {
+    candleCount: 0,
+    memories: [{
+      id: 1771884000000,
+      title: 'Muck',
+      note: 'Our beloved Muck',
+      author: 'Memorial',
+      photo_filename: 'image.png',
+      date: 'Feb 23, 2026',
+      timestamp: 1771884000000
+    }],
+    messages: []
+  };
+  fs.writeFileSync(dbPath, JSON.stringify(initialDb, null, 2));
+  console.log('📋 Created initial database');
+}
+
 // --- Simple JSON Store ---
 function loadDb() {
   try {
