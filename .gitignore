@@ -18,3 +18,4 @@ Thumbs.db
 
 # Cloned template (not needed in production)
 Endless-Gallery-Template/
+firebase-service-account.json
