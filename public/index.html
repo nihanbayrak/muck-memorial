@@ -55,91 +55,18 @@
       border-radius: 4px;
     }
 
-    /* Subtle floating particles */
-    .particles {
+    /* Ambient Background */
+    .ambient-bg {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none;
       z-index: 0;
-      overflow: hidden;
-    }
-
-    .particle {
-      position: absolute;
-      opacity: 0;
-      animation: floatUp 15s ease-in-out infinite;
-      color: var(--accent-warm);
-      font-family: serif;
-    }
-
-    .particle:nth-child(odd) {
-      animation-name: floatUpSway;
-      animation-duration: 18s;
-    }
-
-    .particle:nth-child(3n) {
-      color: var(--text-muted);
-    }
-
-    @keyframes floatUpSway {
-      0% {
-        opacity: 0;
-        transform: translateY(100vh) translateX(0) rotate(0deg) scale(0.5);
-      }
-
-      10% {
-        opacity: 0.3;
-        transform: translateY(90vh) translateX(20px) rotate(20deg) scale(0.8);
-      }
-
-      30% {
-        transform: translateY(60vh) translateX(-15px) rotate(60deg) scale(0.9);
-      }
-
-      50% {
-        opacity: 0.35;
-        transform: translateY(40vh) translateX(25px) rotate(100deg) scale(0.85);
-      }
-
-      70% {
-        transform: translateY(20vh) translateX(-10px) rotate(140deg) scale(0.7);
-      }
-
-      90% {
-        opacity: 0.15;
-      }
-
-      100% {
-        opacity: 0;
-        transform: translateY(-50px) translateX(15px) rotate(180deg) scale(0.5);
-      }
-    }
-
-    @keyframes floatUp {
-      0% {
-        opacity: 0;
-        transform: translateY(100vh) scale(0.6);
-      }
-
-      15% {
-        opacity: 0.25;
-      }
-
-      50% {
-        opacity: 0.3;
-      }
-
-      85% {
-        opacity: 0.15;
-      }
-
-      100% {
-        opacity: 0;
-        transform: translateY(-50px) scale(0.8);
-      }
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 30% 70%, rgba(232, 196, 160, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 30%, rgba(232, 196, 160, 0.03) 0%, transparent 50%);
     }
 
     /* Paw trail effect */
@@ -1006,8 +933,8 @@
 </head>
 
 <body>
-  <!-- Floating particles -->
-  <div class="particles" id="particles"></div>
+  <!-- Ambient Background -->
+  <div class="ambient-bg"></div>
 
   <!-- Glow effect -->
   <div class="glow-effect" id="glow"></div>
@@ -1045,7 +972,7 @@
 
     <div class="candles-display" id="candlesDisplay"></div>
 
-    <button class="candle-btn" id="candleBtn">
+    <button type="button" class="candle-btn" id="candleBtn">
       🕯️ &nbsp; Light a Candle
     </button>
 
@@ -1090,7 +1017,7 @@
 
     <div class="legacy-grid">
       <div class="legacy-item">
-        <div class="legacy-number">847</div>
+        <div class="legacy-number">5115</div>
         <div class="legacy-label">Days With Us</div>
       </div>
       <div class="legacy-item">
@@ -1175,22 +1102,7 @@
     }
     loadData();
 
-    // Create floating particles - minimal botanical elements
-    function createParticles() {
-      const container = document.getElementById('particles');
-      const botanicals = ['✿', '❀', '✾', '❁', '⚘', '✽', '∙', '◦', '○', '·'];
-      for (let i = 0; i < 25; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        p.textContent = botanicals[Math.floor(Math.random() * botanicals.length)];
-        p.style.left = Math.random() * 100 + '%';
-        p.style.animationDelay = Math.random() * 10 + 's';
-        p.style.fontSize = (8 + Math.random() * 16) + 'px';
-        p.style.opacity = 0.15 + Math.random() * 0.2;
-        container.appendChild(p);
-      }
-    }
-    createParticles();
+    // Interactive floating dots handled by ambientCanvas below
 
     // Paw trail effect
     let lastPawTime = 0;
@@ -1296,7 +1208,8 @@
       reader.readAsDataURL(file);
     }
 
-    async function submitMemory() {
+    async function submitMemory(e) {
+      console.log('submitMemory triggered by:', e ? e.target : 'unknown');
       const title = document.getElementById('memoryTitle').value.trim();
       const note = document.getElementById('memoryNote').value.trim();
       const author = document.getElementById('memoryAuthor').value.trim();
@@ -1424,33 +1337,88 @@
     });
   </script>
 
-  <!-- Ambient floating dots (same as Memory Tree) -->
+  <!-- Interactive Ambient floating dots -->
   <canvas id="ambientCanvas"
     style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
   <script>
     (function () {
       const c = document.getElementById('ambientCanvas');
-      const x = c.getContext('2d');
-      function resize() {
-        c.width = window.innerWidth * devicePixelRatio;
-        c.height = window.innerHeight * devicePixelRatio;
-        x.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      const ctx = c.getContext('2d');
+      let w, h;
+      let particles = [];
+      let mouse = { x: -1000, y: -1000 };
+
+      function init() {
+        w = window.innerWidth;
+        h = window.innerHeight;
+        c.width = w * devicePixelRatio;
+        c.height = h * devicePixelRatio;
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+
+        particles = [];
+        const count = w < 768 ? 20 : 40;
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 1.5 + 0.5,
+            baseAlpha: Math.random() * 0.3 + 0.1
+          });
+        }
       }
-      window.addEventListener('resize', resize);
-      resize();
+
+      window.addEventListener('resize', init);
+      window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+      window.addEventListener('mouseout', () => { mouse.x = -1000; mouse.y = -1000; });
+      init();
+
       function draw() {
-        const w = window.innerWidth, h = window.innerHeight;
-        x.clearRect(0, 0, w, h);
+        ctx.clearRect(0, 0, w, h);
+
+        // Interactive particles
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > w) p.vx *= -1;
+          if (p.y < 0 || p.y > h) p.vy *= -1;
+
+          let dx = mouse.x - p.x;
+          let dy = mouse.y - p.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 120) {
+            let angle = Math.atan2(dy, dx);
+            p.x -= Math.cos(angle) * 1.5;
+            p.y -= Math.sin(angle) * 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(232, 196, 160, ${0.15 - dist / 120 * 0.15})`;
+            ctx.stroke();
+          }
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(232, 196, 160, ${p.baseAlpha})`;
+          ctx.fill();
+        });
+
+        // The sine wave background floating dots from Memory Tree
         const t = Date.now() * 0.001;
         for (let i = 0; i < 20; i++) {
           const ax = Math.sin(t * 0.2 + i * 1.7) * w * 0.45 + w / 2;
           const ay = Math.cos(t * 0.15 + i * 2.3) * h * 0.45 + h / 2;
           const a = 0.03 + Math.sin(t + i) * 0.02;
-          x.beginPath();
-          x.arc(ax, ay, 1.5, 0, Math.PI * 2);
-          x.fillStyle = `rgba(232, 196, 160, ${a})`;
-          x.fill();
+          ctx.beginPath();
+          ctx.arc(ax, ay, 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(232, 196, 160, ${a})`;
+          ctx.fill();
         }
+
         requestAnimationFrame(draw);
       }
       draw();

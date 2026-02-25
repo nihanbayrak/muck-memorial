@@ -146,7 +146,7 @@ const upload = multer({
 // --- Middleware ---
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: '1d', // Cache static assets for 1 day
+  maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0, // Cache static assets for 1 day in prod
   etag: true
 }));
 app.use('/uploads', express.static(uploadsDir, {
