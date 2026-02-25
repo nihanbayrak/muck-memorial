@@ -46,7 +46,7 @@ if (process.env.CLOUDINARY_URL) {
 }
 console.log('☁️ Cloudinary initialized');
 
-const db = admin.firestore();
+const db = serviceAccount ? admin.firestore() : null;
 
 app.set('trust proxy', 1);
 
