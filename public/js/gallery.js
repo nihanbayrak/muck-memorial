@@ -201,7 +201,7 @@ class EndlessGallery {
 
     // Start momentum animation if there's velocity
     if (Math.abs(this.velocity.x) > this.minVelocity ||
-        Math.abs(this.velocity.y) > this.minVelocity) {
+      Math.abs(this.velocity.y) > this.minVelocity) {
       this.startMomentum();
     }
   }
@@ -235,7 +235,7 @@ class EndlessGallery {
 
     // Start momentum animation
     if (Math.abs(this.velocity.x) > this.minVelocity ||
-        Math.abs(this.velocity.y) > this.minVelocity) {
+      Math.abs(this.velocity.y) > this.minVelocity) {
       this.startMomentum();
     }
   }
@@ -308,7 +308,7 @@ class EndlessGallery {
 
     // Start momentum animation if there's velocity
     if (Math.abs(this.velocity.x) > this.minVelocity ||
-        Math.abs(this.velocity.y) > this.minVelocity) {
+      Math.abs(this.velocity.y) > this.minVelocity) {
       this.startMomentum();
     }
   }
@@ -333,7 +333,7 @@ class EndlessGallery {
 
     // Stop if velocity is negligible
     if (Math.abs(this.velocity.x) < this.minVelocity &&
-        Math.abs(this.velocity.y) < this.minVelocity) {
+      Math.abs(this.velocity.y) < this.minVelocity) {
       this.velocity = { x: 0, y: 0 };
       this.momentumRafId = null;
       return;
@@ -355,7 +355,7 @@ class EndlessGallery {
   handleKeyboard(e) {
     const speed = this.config.keyboardScrollSpeed;
 
-    switch(e.key) {
+    switch (e.key) {
       case 'ArrowLeft':
         this.scroll.x += speed;
         break;
@@ -536,18 +536,18 @@ class EndlessGallery {
       // Horizontal overlap check
       console.log('🔍 Horizontal column overlap check:');
       for (let c = startCol; c < endCol; c++) {
-        const leftX  = c * colSpacing + this.scroll.x + horizontalOffset;
+        const leftX = c * colSpacing + this.scroll.x + horizontalOffset;
         const rightX = leftX + columnWidth;
         const nextLeftX = (c + 1) * colSpacing + this.scroll.x + horizontalOffset;
         const gapActual = nextLeftX - rightX;
         const overlaps = gapActual < gap - 0.5;
         console.log(
           `  col ${c}: left=${leftX.toFixed(1)}, right=${rightX.toFixed(1)} | ` +
-          `col ${c+1}: left=${nextLeftX.toFixed(1)} | ` +
+          `col ${c + 1}: left=${nextLeftX.toFixed(1)} | ` +
           `gap=${gapActual.toFixed(1)}px ${overlaps ? '❌ OVERLAP' : '✅ OK'}`
         );
         if (overlaps) {
-          console.error(`❌ H-OVERLAP between col ${c} and col ${c+1}!`);
+          console.error(`❌ H-OVERLAP between col ${c} and col ${c + 1}!`);
         }
       }
 
@@ -564,11 +564,11 @@ class EndlessGallery {
           const overlaps = vGap < gap - 0.5;
           console.log(
             `  seg ${seg} bottom=${lastBottom.toFixed(1)} | ` +
-            `seg ${seg+1} top=${nextTop.toFixed(1)} | ` +
+            `seg ${seg + 1} top=${nextTop.toFixed(1)} | ` +
             `gap=${vGap.toFixed(1)}px ${overlaps ? '❌ OVERLAP' : '✅ OK'}`
           );
           if (overlaps) {
-            console.error(`❌ V-OVERLAP between seg ${seg} and seg ${seg+1}! ` +
+            console.error(`❌ V-OVERLAP between seg ${seg} and seg ${seg + 1}! ` +
               `Expected gap ~${gap}px, got ${vGap.toFixed(1)}px`);
           }
         }
@@ -719,7 +719,7 @@ class EndlessGallery {
     } else if (element.tagName === 'VIDEO') {
       element.src = src;
       if (this.config.video.autoplay) {
-        element.play().catch(() => {});
+        element.play().catch(() => { });
       }
     }
 
@@ -772,7 +772,6 @@ class EndlessGallery {
       }
 
       div.appendChild(video);
-      this.intersectionObserver.observe(div);
     } else {
       const img = document.createElement('img');
       img.className = 'gallery-media';
@@ -794,7 +793,6 @@ class EndlessGallery {
       }
 
       div.appendChild(img);
-      this.intersectionObserver.observe(div);
     }
 
     return div;
@@ -838,6 +836,7 @@ class EndlessGallery {
       if (!element) {
         element = this.createTileElement(tile);
         this.container.appendChild(element);
+        this.intersectionObserver.observe(element); // Observe AFTER adding to DOM
         this.visibleTiles.set(tile.key, element);
       } else {
         // Update position
