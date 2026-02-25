@@ -61,6 +61,7 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 // --- Seed initial data on first run (Render: persistent disk starts empty) ---
 const seedImage = path.join(__dirname, 'image.png');
 const targetImage = path.join(uploadsDir, 'image.png');
+
 if (fs.existsSync(seedImage) && !fs.existsSync(targetImage)) {
   fs.copyFileSync(seedImage, targetImage);
   console.log('📷 Seeded initial Muck photo into uploads');
