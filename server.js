@@ -199,7 +199,11 @@ function saveDb(db) {
 function sanitize(str, maxLen = 500) {
   if (!str) return '';
   return str
-    .replace(/[<>]/g, '') // Strip HTML-like chars
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
     .trim()
     .slice(0, maxLen);
 }
@@ -207,13 +211,14 @@ function sanitize(str, maxLen = 500) {
 // --- HEIC Conversion (cross-platform) ---
 function convertHeicToJpeg(heicPath, jpegPath) {
   const platform = process.platform;
+  const { execFileSync } = require('child_process');
   try {
     if (platform === 'darwin') {
-      // macOS: use built-in sips
-      execSync(`sips -s format jpeg "${heicPath}" --out "${jpegPath}"`, { timeout: 30000 });
+      // macOS: use built-in sips (safe array args)
+      execFileSync('sips', ['-s', 'format', 'jpeg', heicPath, '--out', jpegPath], { timeout: 30000 });
     } else {
-      // Linux/Render: use ImageMagick (installed via Dockerfile)
-      execSync(`convert "${heicPath}" "${jpegPath}"`, { timeout: 30000 });
+      // Linux/Render: use ImageMagick (safe array args)
+      execFileSync('convert', [heicPath, jpegPath], { timeout: 30000 });
     }
     return true;
   } catch (err) {
@@ -236,8 +241,20 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB (iPhone photos can be large)
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) cb(null, true);
-    else cb(new Error('Only image files are allowed'));
+    // Basic mimetype check
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'));
+    }
+
+    // Strict extension whitelist to prevent .html or execution scripts
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
+    const ext = path.extname(file.originalname).toLowerCase();
+
+    if (allowedExtensions.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only standard images allowed.'));
+    }
   }
 });
 
